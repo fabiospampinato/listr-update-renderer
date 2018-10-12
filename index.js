@@ -13,26 +13,25 @@ const renderHelper = (tasks, options, level) => {
 	let output = [];
 
 	for (const task of tasks) {
-		if (task.isEnabled()) {
-			const skipped = task.isSkipped() ? ` ${chalk.dim('[skipped]')}` : '';
+		const disabled = !task.isEnabled() ? ` ${chalk.dim('[disabled]')}`: '';
+		const skipped = task.isSkipped() ? ` ${chalk.dim('[skipped]')}` : '';
 
-			const out = indentString(` ${utils.getSymbol(task, options)} ${task.title}${skipped}`, level, '  ');
-			output.push(cliTruncate(out, process.stdout.columns));
+		const out = indentString(` ${utils.getSymbol(task, options)} ${task.title}${disabled}${skipped}`, level, '  ');
+		output.push(cliTruncate(out, process.stdout.columns));
 
-			if ((!options.collapse || (task.isPending() || task.isSkipped() || task.hasFailed())) && utils.isDefined(task.output)) {
-				let data = String(task.output).trim().split('\n').map(stripAnsi).filter(Boolean);
+		if ((!options.collapse || (task.isPending() || !task.isEnabled() || task.isSkipped() || task.hasFailed())) && utils.isDefined(task.output)) {
+			let data = String(task.output).trim().split('\n').map(stripAnsi).filter(Boolean);
 
-				if (data.length) {
-					data.forEach ( datum => {
-						const out = indentString(`${figures.arrowRight} ${datum}`, level, '  ');
-						output.push(`   ${chalk.gray(cliTruncate(out, process.stdout.columns - 3))}`);
-					});
-				}
+			if (data.length) {
+				data.forEach ( datum => {
+					const out = indentString(`${figures.arrowRight} ${datum}`, level, '  ');
+					output.push(`   ${chalk.gray(cliTruncate(out, process.stdout.columns - 3))}`);
+				});
 			}
+		}
 
-			if ((task.isPending() || task.hasFailed() || options.collapse === false) && (task.hasFailed() || options.showSubtasks !== false) && task.subtasks.length > 0) {
-				output = output.concat(renderHelper(task.subtasks, options, level + 1));
-			}
+		if ((task.isPending() || task.hasFailed() || options.collapse === false) && (task.hasFailed() || options.showSubtasks !== false) && task.subtasks.length > 0) {
+			output = output.concat(renderHelper(task.subtasks, options, level + 1));
 		}
 	}
 
