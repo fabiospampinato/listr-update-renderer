@@ -13,6 +13,7 @@ const renderHelper = (tasks, options, level) => {
 	let output = [];
 
 	for (const task of tasks) {
+		if (!options.showNextTasks && task.state === 'unknown') continue;
 		if (task.isEnabled()) {
 			const skipped = task.isSkipped() ? ` ${chalk.dim('[skipped]')}` : '';
 
@@ -53,6 +54,7 @@ class UpdateRenderer {
 	constructor(tasks, options) {
 		this._tasks = tasks;
 		this._options = Object.assign({
+			showNextTasks: true,
 			showSubtasks: true,
 			collapse: true,
 			clearOutput: false
